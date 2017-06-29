@@ -4,11 +4,13 @@ Created on Wed Jun 14 14:27:52 2017
 
 @author: pecki
 """
+import time as tm
 import numpy as np
 import os.path
 import sys
 import os
-sys.path.append(os.path.join(os.getcwd(), 'TransformMCNPPhantom'))
+sys.path.append(os.path.join(os.getcwd(), 'FileIO'))
+print(sys.path)
 import FileIO as fio
 
 # Asks the user for the file name for the geometry of the phantom
@@ -222,6 +224,30 @@ of the phantom.')
         CT_diameters.append(rat)
     
     print(CT_diameters)
-    
-    
-    
+
+print("working to find matrix")
+begin_t = tm.time()
+mtxs = []
+st = 0
+ed = x0*y0
+z = 0
+while z <= z0-1:
+    m = []
+    D = densities[st:ed]
+    y = 0
+    ys = 0
+    ye = x0
+    while y <= y0-1:
+        yms = D[ys:ye]
+        m.append(yms)
+        y += 1
+        ys += x0
+        ye += x0
+    mtxs.append(m)
+    z += 1
+    st += x0*y0
+    ed += x0*y0
+end_t = tm.time()
+
+print("This took {} sec".format((end_t - begin_t)))
+print(mtxs)
