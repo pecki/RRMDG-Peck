@@ -1,3 +1,0 @@
-This is a test file to initialize the Git repository RRMDG-Peck.
-
-C:\Users\pecki\Dropbox\Research
