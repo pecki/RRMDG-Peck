@@ -10,7 +10,6 @@ import os.path
 import sys
 import os
 sys.path.append(os.path.join(os.getcwd(), 'FileIO'))
-print(sys.path)
 import FileIO as fio
 
 # Asks the user for the file name for the geometry of the phantom
@@ -52,25 +51,31 @@ phantom1D = fio.ImportPhantom(f, dim, verbose = True)
 # Creates a list (materials) of sublists, with each sublist containing
 # bits of information about each organ/material, corresponding to the ID numbers
 materials = []
+air = 0
 for line in open(f, 'r'):
     if 'vol' in line:
         l = line.split(' ')
         l[:] = [item for item in l if item != '']
         materials.append(l)
+for m in materials:
+    if 'airinside' in m:
+        air = (float(m[2])*-1)
 
 # Creates a dictionary in which the ID numbers of each material are the keys
-# and the values are the corresponding density values
+# and the values are the corresponding density values.  Initializes the density
+# of air for later calculations.
 assgn = {}
 for organ in materials:
     o0int = int(organ[0])
     o2flt = float(organ[2])
     assgn[o0int] = o2flt
 
+
 # Creates an array of the same length and in the same order as the phantom1D
 # array, but with densities for each voxel instead of ID numbers
 density_list = []
 for b in phantom1D:
-    val = assgn[b]
+    val = (assgn[b]*-1)
     density_list.append(val)  
 densities = np.array(density_list)
 
@@ -88,7 +93,6 @@ print('\nThe length of the phantom1D array is ' , len(phantom1D), '\
 
 # Creates a list and a dictionary of the average density per constant z (slice)
 const_z = []
-z_vals = {}
 start = 0
 end = x0*y0
 z = 0
@@ -96,36 +100,39 @@ while z <= z0-1:
     D = densities[start:end]
     avg = sum(D)/len(D)
     const_z.append(avg)
-    z_vals[z] = avg
     z += 1
     start += x0*y0
     end += x0*y0
 
+
 # Finds the average density for a section of the phantom from z_1 to z_2
 stn = input('Do you want to know the average density for multiple slices? Y/N: ')
+scanrange = True
 if stn == 'y' or stn == 'Y':
-    z_1 = int(input('Enter the number (z-value) of the starting (included) slice: '))
-    z_2 = int(input('Enter the number (z-value) of the ending (not included) slice: '))
-    if z_1 < 0 or z_2 not in range(len(const_z)) or z_2 < z_1:
-        print('Invalid slice input(s)')
-    else:
-        sub_dens = const_z[z_1:z_2]
-        vol_avg = sum(sub_dens)/len(sub_dens)
-        print('The average density for this volume of the phantom is', vol_avg)
-        
-        # Finds diameter of cylinders with uniform density by taking the ratio of the 
-        # density of each slice to the average volume density. Creates both a 
-        # dictionary and a list
-        z_cyl = []
-        z_sli_cyl = {}
-        for s in sub_dens:
-            num = sub_dens.index(s) + z_1
-            ratio = float(round(s/vol_avg, 3))
-            z_cyl.append(ratio)
-            z_sli_cyl[num] = ratio
-
-        print(z_sli_cyl)
-        print(z_cyl)
+    while scanrange == True:
+        z_1 = int(input('Enter the number (z-value) of the starting (included) slice: '))
+        z_2 = int(input('Enter the number (z-value) of the ending (not included) slice: '))
+        if z_1 < 0 or z_2 not in range(len(const_z)) or z_2 < z_1:
+            scanrange = True
+            print('Invalid slice input(s)')
+        else:
+            scanrange = False
+            sub_dens = const_z[z_1:z_2]
+            vol_avg = sum(sub_dens)/len(sub_dens)
+            print('The average density for this volume of the phantom is', vol_avg)
+            
+            # Finds diameter of cylinders with uniform density by taking the ratio of the 
+            # density of each slice to the average volume density. Creates both a 
+            # dictionary and a list
+            z_cyl = []
+            z_sli_cyl = {}
+            for s in sub_dens:
+                num = sub_dens.index(s) + z_1
+                ratio = float(round(s/vol_avg, 3))
+                z_cyl.append(ratio)
+                z_sli_cyl[num] = ratio
+    
+            print('The diameters of the cylinders for each z slice are shown:', z_sli_cyl)
 
 
 # Allows user to use a slice thickness that is not the same as the voxel z-dimension
@@ -247,7 +254,8 @@ while z <= z0-1:
     z += 1
     st += x0*y0
     ed += x0*y0
+mtxarray = np.array(mtxs)
 end_t = tm.time()
 
 print("This took {} sec".format((end_t - begin_t)))
-print(mtxs)
+print(mtxarray)
