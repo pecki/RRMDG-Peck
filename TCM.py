@@ -103,6 +103,8 @@ while z <= z0-1:
     z += 1
     start += x0*y0
     end += x0*y0
+    
+print(len(const_z))
 
 
 # Finds the average density for a section of the phantom from z_1 to z_2
@@ -112,7 +114,7 @@ if stn == 'y' or stn == 'Y':
     while scanrange == True:
         z_1 = int(input('Enter the number (z-value) of the starting (included) slice: '))
         z_2 = int(input('Enter the number (z-value) of the ending (not included) slice: '))
-        if z_1 < 0 or z_2 not in range(len(const_z)) or z_2 < z_1:
+        if z_1 < 0 or z_2 not in range(len(const_z)+1) or z_2 < z_1:
             scanrange = True
             print('Invalid slice input(s)')
         else:
@@ -218,22 +220,18 @@ of the phantom.')
         slice_avgs.append(avg_slice)
 
         i += 1
-    print(slice_avgs)
     
 # Finds average density over the whole volume/range of the scan
 # and compares each slice average density to the volume density to find
 # the ratio that is the diameter of each uniform-density cylinder
     CT_avg_vol = sum(slice_avgs) / len(slice_avgs)
-    print(CT_avg_vol)
     CT_diameters = []
     for d in slice_avgs:
         rat = d / CT_avg_vol
         CT_diameters.append(rat)
-    
-    print(CT_diameters)
 
-print("working to find matrix")
-begin_t = tm.time()
+    
+# Finds 3D matrix (x,y,z) box
 mtxs = []
 st = 0
 ed = x0*y0
@@ -255,7 +253,26 @@ while z <= z0-1:
     st += x0*y0
     ed += x0*y0
 mtxarray = np.array(mtxs)
-end_t = tm.time()
 
-print("This took {} sec".format((end_t - begin_t)))
-print(mtxarray)
+print('A 3D matrix with the voxels in a 3D grid has been created.')
+
+
+# Function to find the exponential absorption value
+
+def exp(rho, t):
+    absorption = np.exp(-rho*t)
+    return absorption
+    
+if ct == 'y' or ct == 'Y':
+    zI0 = []
+    i = 0
+    rho = CT_avg_vol
+    while i < len(slice_avgs):
+        t = CT_diameters[i]
+        I_0 = 1/exp(rho, t)
+        zI0.append(I_0)
+        i += 1
+    print('\nThe diameters of each slice are shown:', CT_diameters)
+    print('\nThe average density over the entire range is:', CT_avg_vol)
+    print('\nThe initial intensities I_0 needed such that the projection intensity \
+I stays constant are shown:', zI0)
