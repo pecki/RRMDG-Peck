@@ -170,7 +170,7 @@ if ct == 'y' or ct == 'Y':
         startcm = float(input('What is the starting value for the section (in cm)? '))
         endcm = float(input('What is the ending value for the section (in cm)? '))
         beam = float(input('What is the width of the x-ray beam (in cm)? '))
-        if beam == 0:
+        if beam == 0 or startcm == endcm:
             print('The beam width cannot be 0.')
             continue
         else:
