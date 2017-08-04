@@ -4,7 +4,7 @@ Created on Wed Jun 14 14:27:52 2017
 
 @author: pecki
 """
-import time as tm
+
 import numpy as np
 import os.path
 import sys
@@ -108,7 +108,7 @@ print(len(const_z))
 
 
 # Finds the average density for a section of the phantom from z_1 to z_2
-stn = input('Do you want to know the average density for multiple slices? Y/N: ')
+stn = input('Do you want to know the average density for multiple z-slices? Y/N: ')
 scanrange = True
 if stn == 'y' or stn == 'Y':
     while scanrange == True:
@@ -159,24 +159,24 @@ if ct == 'y' or ct == 'Y':
     for key in dims.keys():
         if key in f:
             correct = dims[key]
-    num_slice = 2.1
     beam = 0
+    pitch = 0
     startcm = -1
     endcm = float(correct[8]) + 1
 # These if statements ensure that the starting and ending slice values are 
 # valid, and that the beam width is valid with these slice values
-    while (float(num_slice) != int(num_slice) or beam == 0 or startcm < 0 \
+    while ( beam == 0 or startcm < 0 \
            or endcm > float(correct[8]) or endcm < startcm):
         startcm = float(input('What is the starting value for the section (in cm)? '))
         endcm = float(input('What is the ending value for the section (in cm)? '))
         beam = float(input('What is the width of the x-ray beam (in cm)? '))
-        if beam == 0 or startcm == endcm:
+        pitch = float(input('What is the pitch of the machine? '))
+        width = beam*pitch
+        if beam == 0 or startcm == endcm or pitch == 0:
             print('The beam width cannot be 0.')
             continue
         else:
-            num_slice = (endcm - startcm)/beam
-        if float(num_slice) != int(num_slice):
-            print('Section length not evenly divisible by beam width.')
+            num_slice = (endcm - startcm)/width
         if startcm < 0:
             print('The starting value cannot be negative.')
         if endcm > float(correct[8]):
@@ -191,9 +191,14 @@ of the phantom.')
 # be one less than the length of the list of edge values
     s = startcm
     bounds = []
-    while s <= endcm:
-        bounds.append(s)
-        s += beam
+    while s < endcm:
+        rem = endcm - s
+        if rem < width and rem != 0:
+            bounds.append(round(endcm, 3))
+            break
+        bounds.append(round(s, 3))
+        s += width
+    print(bounds)
 
 # For each pair of adjacent values in 'bounds', the average density for
 # this slice is computed and appended to a list of slice densities
@@ -215,8 +220,10 @@ of the phantom.')
                 slice_sum += (z * end_frac)
             else:
                 slice_sum += z
-
-        avg_slice = round(slice_sum / beam, 10)
+        print(slice_sum)
+        print(bounds[i+1]-bounds[i])
+        avg_slice = round(slice_sum / (bounds[i+1]-bounds[i]), 10)
+        print(avg_slice)
         slice_avgs.append(avg_slice)
 
         i += 1
@@ -259,17 +266,19 @@ print('A 3D matrix with the voxels in a 3D grid has been created.')
 
 # Function to find the exponential absorption value
 
-def exp(rho, t):
-    absorption = np.exp(-rho*t)
+def exp(mass_atten, rho, t):
+    absorption = np.exp(-mass_atten*rho*t)
     return absorption
     
 if ct == 'y' or ct == 'Y':
     zI0 = []
     i = 0
     rho = CT_avg_vol
+    mass_atten = 1
     while i < len(slice_avgs):
+        I_const = 1
         t = CT_diameters[i]
-        I_0 = 1/exp(rho, t)
+        I_0 = I_const/exp(rho, t)
         zI0.append(I_0)
         i += 1
     print('\nThe diameters of each slice are shown:', CT_diameters)
