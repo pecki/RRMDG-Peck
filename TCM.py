@@ -13,96 +13,97 @@ sys.path.append(os.path.join(os.getcwd(), 'FileIO'))
 import FileIO as fio
 
 # Asks the user for the file name for the geometry of the phantom
-f = input('Geometry file name: ')
+geo = input('Geometry file name: ')
 
-while os.path.isfile(f) == False:
+while os.path.isfile(geo) == False:
     print('This file does not exist in the same directory as this program.')
-    f = input('Geometry file name: ')
+    geo = input('Geometry file name: ')
 
 # Finds and specifies the dimensions of the phantom using the "fill=" line
 # at the beginning of the geometry file
-c = []
-phantom_dimensions = []
-for line in open(f, 'r'):
-    if 'fill=0' in line:
-        line = line.strip().strip('fill=')
-        a = line.split(':')
-        for x in a:
-            if '0' in x or '&' in x:
-                x = x.strip('0').strip('&').strip()
-            c.append(x)
-        for y in c:
-            if y.isdigit():
-                phantom_dimensions.append(int(y)+1)
 
-x0 = phantom_dimensions[0]
-y0 = phantom_dimensions[1]
-z0 = phantom_dimensions[2]
-dim = [x0, y0, z0]
+def get_dims(f):
+    c = []
+    phant_dims = []
+    for line in open(f, 'r'):
+        if 'fill=0' in line:
+            line = line.strip().strip('fill=')
+            a = line.split(':')
+            for x in a:
+                if '0' in x or '&' in x:
+                    x = x.strip('0').strip('&').strip()
+                c.append(x)
+            for y in c:
+                if y.isdigit():
+                    phant_dims.append(int(y)+1)
+    return phant_dims
+
+phant_dims = get_dims(geo)
 
 
-
-# Uses an imported function to create an array containing (x0*y0*z0) entries
-# which are number IDs representing materials for which data is also included
-# in the phantom geometry file
-phantom1D = fio.ImportPhantom(f, dim, verbose = True)
+# Uses an imported function to create an array containing (phant_dims[0]*
+# phant_dims[1]*phant_dims[2]) entries which are number IDs representing 
+# materials for which data is also included in the phantom geometry file
+phantom1D = fio.ImportPhantom(geo, phant_dims, verbose = True)
 
 
 # Creates a list (materials) of sublists, with each sublist containing
 # bits of information about each organ/material, corresponding to the ID numbers
-materials = []
-air = 0
-for line in open(f, 'r'):
-    if 'vol' in line:
-        l = line.split(' ')
-        l[:] = [item for item in l if item != '']
-        materials.append(l)
-for m in materials:
-    if 'airinside' in m:
-        air = (float(m[2])*-1)
+def densities(f):
+    materials = []
+    air = 0
+    for line in open(f, 'r'):
+        if 'vol' in line:
+            l = line.split(' ')
+            l[:] = [item for item in l if item != '']
+            materials.append(l)
+    for m in materials:
+        if 'airinside' in m:
+            air = (float(m[2])*-1)
+    
+    # Creates a dictionary in which the ID numbers of each material are the keys
+    # and the values are the corresponding density values.  Initializes the density
+    # of air for later calculations.
+    assgn = {}
+    for organ in materials:
+        o0int = int(organ[0])
+        o2flt = float(organ[2])
+        assgn[o0int] = o2flt
+    
+    # Creates an array of the same length and in the same order as the phantom1D
+    # array, but with densities for each voxel instead of ID numbers
+    density_list = []
+    for b in phantom1D:
+        val = (assgn[b]*-1)
+        density_list.append(val)  
+    densities = np.array(density_list)
+    return densities
 
-# Creates a dictionary in which the ID numbers of each material are the keys
-# and the values are the corresponding density values.  Initializes the density
-# of air for later calculations.
-assgn = {}
-for organ in materials:
-    o0int = int(organ[0])
-    o2flt = float(organ[2])
-    assgn[o0int] = o2flt
-
-
-# Creates an array of the same length and in the same order as the phantom1D
-# array, but with densities for each voxel instead of ID numbers
-density_list = []
-for b in phantom1D:
-    val = (assgn[b]*-1)
-    density_list.append(val)  
-densities = np.array(density_list)
-
+dens_array = densities(geo)
 # Prints all the useful information
-print('The dimensions of the phantom in [x,y,z] form are:', dim)
-print('This indicates that there are', x0*y0*z0, 'voxels in total.')
+print('The dimensions of the phantom in [x,y,z] form are:', phant_dims)
+print('This indicates that there are', phant_dims[0]*phant_dims[1]*phant_dims[2], 'voxels in total.')
 print('\nThe phantom array containing all the ID numbers for each voxel:')
 print('phantom1D =', phantom1D)
 print('\nThe phantom array containing all the density values corresponding\
  to the ID numbers in the original array:')
-print('densities =', densities)
+print('densities =', dens_array)
 print('\nThe length of the phantom1D array is ' , len(phantom1D), '\
- and the length of the densities array is ', len(densities), '.  Both should\
+ and the length of the densities array is ', len(dens_array), '.  Both should\
  match the total number of voxels analyzed.', sep='')
 
 # Creates a list and a dictionary of the average density per constant z (slice)
 const_z = []
 start = 0
-end = x0*y0
+end = phant_dims[0]*phant_dims[1]
 z = 0
-while z <= z0-1:
-    D = densities[start:end]
+while z <= phant_dims[2]-1:
+    D = dens_array[start:end]
     avg = sum(D)/len(D)
     const_z.append(avg)
     z += 1
-    start += x0*y0
-    end += x0*y0
+    start += phant_dims[0]*phant_dims[1]
+    end += phant_dims[0]*phant_dims[1]
     
 print(len(const_z))
 
@@ -157,7 +158,7 @@ if ct == 'y' or ct == 'Y':
 
 # Finds information from dictionary for the current phantom being analyzed
     for key in dims.keys():
-        if key in f:
+        if key in geo:
             correct = dims[key]
     beam = 0
     pitch = 0
@@ -194,6 +195,7 @@ of the phantom.')
     while s < endcm:
         rem = endcm - s
         if rem < width and rem != 0:
+            bounds.append(round(s, 3))
             bounds.append(round(endcm, 3))
             break
         bounds.append(round(s, 3))
@@ -241,24 +243,24 @@ of the phantom.')
 # Finds 3D matrix (x,y,z) box
 mtxs = []
 st = 0
-ed = x0*y0
+ed = phant_dims[0]*phant_dims[1]
 z = 0
-while z <= z0-1:
+while z <= phant_dims[2]-1:
     m = []
-    D = densities[st:ed]
+    D = dens_array[st:ed]
     y = 0
     ys = 0
-    ye = x0
-    while y <= y0-1:
+    ye = phant_dims[0]
+    while y <= phant_dims[1]-1:
         yms = D[ys:ye]
         m.append(yms)
         y += 1
-        ys += x0
-        ye += x0
+        ys += phant_dims[0]
+        ye += phant_dims[0]
     mtxs.append(m)
     z += 1
-    st += x0*y0
-    ed += x0*y0
+    st += phant_dims[0]*phant_dims[1]
+    ed += phant_dims[0]*phant_dims[1]
 mtxarray = np.array(mtxs)
 
 print('A 3D matrix with the voxels in a 3D grid has been created.')
