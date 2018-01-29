@@ -115,7 +115,7 @@ if stn == 'y' or stn == 'Y':
     while scanrange == True:
         z_1 = int(input('Enter the number (z-value) of the starting (included) slice: '))
         z_2 = int(input('Enter the number (z-value) of the ending (not included) slice: '))
-        if z_1 < 0 or z_2 not in range(len(const_z)+1) or z_2 < z_1:
+        if z_1 < 0 or z_2 not in range(len(const_z)+1) or z_2 < z_1: # checks for validity of input
             scanrange = True
             print('Invalid slice input(s)')
         else:
@@ -239,32 +239,6 @@ of the phantom.')
         rat = d / CT_avg_vol
         CT_diameters.append(rat)
 
-    
-# Finds 3D matrix (x,y,z) box
-mtxs = []
-st = 0
-ed = phant_dims[0]*phant_dims[1]
-z = 0
-while z <= phant_dims[2]-1:
-    m = []
-    D = dens_array[st:ed]
-    y = 0
-    ys = 0
-    ye = phant_dims[0]
-    while y <= phant_dims[1]-1:
-        yms = D[ys:ye]
-        m.append(yms)
-        y += 1
-        ys += phant_dims[0]
-        ye += phant_dims[0]
-    mtxs.append(m)
-    z += 1
-    st += phant_dims[0]*phant_dims[1]
-    ed += phant_dims[0]*phant_dims[1]
-mtxarray = np.array(mtxs)
-
-print('A 3D matrix with the voxels in a 3D grid has been created.')
-
 
 # Function to find the exponential absorption value
 
@@ -280,7 +254,7 @@ if ct == 'y' or ct == 'Y':
     while i < len(slice_avgs):
         I_const = 1
         t = CT_diameters[i]
-        I_0 = I_const/exp(rho, t)
+        I_0 = I_const/exp(mass_atten, rho, t)
         zI0.append(I_0)
         i += 1
     print('\nThe diameters of each slice are shown:', CT_diameters)
