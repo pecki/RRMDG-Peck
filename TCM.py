@@ -222,10 +222,7 @@ of the phantom.')
                 slice_sum += (z * end_frac)
             else:
                 slice_sum += z
-        print(slice_sum)
-        print(bounds[i+1]-bounds[i])
         avg_slice = round(slice_sum / (bounds[i+1]-bounds[i]), 10)
-        print(avg_slice)
         slice_avgs.append(avg_slice)
 
         i += 1
