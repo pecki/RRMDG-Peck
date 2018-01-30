@@ -78,8 +78,6 @@ def write(geo):
         density_list.append(val)  
     dens_array = np.array(density_list)
 
-# Prints all the useful information
-
 # Creates a list and a dictionary of the average density per constant z (slice)
     const_z = []
     start = 0
@@ -109,18 +107,3 @@ def write(geo):
 g = write(geo)
 print(g)
 
-'''
-## to read in density array from text file, where ph_fl is str name w/o .geo
-    ph_fl = geo.strip('.geo')
-    txt_f = ph_fl + '.txt'
-    s = open(txt_f, 'r')
-    for line in s:
-        de = line.split(' ')
-    dens = []
-    for x in de:
-        if x == '':
-            continue
-        y = float(x)
-        dens.append(y)
-
-'''
