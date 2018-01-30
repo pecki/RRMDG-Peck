@@ -106,3 +106,25 @@ while z <= phant_dims[2]-1:
     end += phant_dims[0]*phant_dims[1]
     
 print(const_z)
+
+def dens_WED(F, ds):  ## F is a file name to be written to, ds = const_z
+## want to convert each value in ds to WED, create an array that is written to a file
+##  ---> density of water = 1 g/cm^3
+    file = open(F, 'w+')
+    for each in ds:
+        num = str(each)
+        file.write(num + ' ')
+    file.close()
+    
+def read_dens(ph_fl):  ## to read in density array from text file, where ph_fl is str name w/o .geo
+    txt_f = ph_fl + '.txt'
+    s = open(txt_f, 'r')
+    for line in s:
+        de = line.split(' ')
+    dens = []
+    for x in de:
+        if x == '':
+            continue
+        y = float(x)
+        dens.append(y)
+    return dens
