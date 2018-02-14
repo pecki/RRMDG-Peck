@@ -13,17 +13,15 @@ sys.path.append(os.path.join(os.getcwd(), 'FileIO'))
 import FileIO as fio
 
 # Asks the user for the file name for the geometry of the phantom
-geo = input('Geometry file name: ')
+text = input('Phantom text file name: ')
 
-while os.path.isfile(geo) == False:
+while os.path.isfile(text) == False:
     print('This file does not exist in the same directory as this program.')
-    geo = input('Geometry file name: ')
+    text = input('Phantom text file name: ')
 
-## to read in density array from text file, where ph_fl is str name w/o .geo
+## to read in density array from text file
 def get_den_list(fi):
-    ph_fl = fi.strip('.geo')
-    txt_f = ph_fl + '.txt'
-    s = open(txt_f, 'r')
+    s = open(fi, 'r')
     for line in s:
         de = line.split(' ')
     dens = []
@@ -34,7 +32,8 @@ def get_den_list(fi):
         dens.append(y)
     return dens
 
-const_z = get_den_list(geo)
+
+const_z = get_den_list(text)
 
 # Finds the average density for a section of the phantom from z_1 to z_2
 stn = input('Do you want to know the average density for multiple z-slices? Y/N: ')
@@ -86,7 +85,7 @@ if ct == 'y' or ct == 'Y':
 
 # Finds information from dictionary for the current phantom being analyzed
     for key in dims.keys():
-        if key in geo:
+        if key in text:
             correct = dims[key]
     beam = 0
     pitch = 0
