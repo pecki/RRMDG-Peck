@@ -7,6 +7,7 @@ Created on Thu Feb  8 20:20:17 2018
 import os
 from PIL import Image
 from numpy import array
+import time
 
 
 def get_dens_from_image(path):
@@ -48,4 +49,7 @@ def get_dens_from_image(path):
     
     return const_z
 
-print(get_dens_from_image("C:\\Users\\pecki\\Dropbox\\Research\\10f"))
+s = time.time()
+print(get_dens_from_image("C:\\Users\\pecki\\Dropbox\\Research\\05f"))
+e = time.time()
+print("Time elapsed:", (e-s), "sec")

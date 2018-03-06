@@ -81,6 +81,8 @@ def TCM_axial(text, stn, z_1, z_2, ct, start_cm, end_cm, beam, pitch):
                     I_0 = I_const/exp(mass_atten, rho, t)
                     z_sli_I0.append(I_0)
                     i += 1
+                print("DENS LIST Z:", sub_dens)
+                print("AVERAGE DENSITY:", vol_avg)
     
     
     # Allows user to use a slice thickness that is not the same as the voxel z-dimension
@@ -127,13 +129,20 @@ def TCM_axial(text, stn, z_1, z_2, ct, start_cm, end_cm, beam, pitch):
     # be one less than the length of the list of edge values
         s = startcm
         bounds = []
-        while s < endcm:
+        print(width)
+        while s <= endcm:
             rem = round((endcm - s), 5)
-            if rem < width and rem != 0:
+            if rem > width:
                 bounds.append(round(s, 3))
+            elif rem == width:
+                bounds.append(round(s, 3))
+            elif rem < width and rem != 0:
+                bounds.append(round(s, 3))
+                bounds.append(round(endcm, 3))
+                break
+            elif rem == 0:
                 bounds.append(round(s, 3))
                 break
-            bounds.append(round(s, 3))
             s += width
         print(bounds)
     
@@ -149,6 +158,9 @@ def TCM_axial(text, stn, z_1, z_2, ct, start_cm, end_cm, beam, pitch):
             end_frac = round(float((bounds[i+1] % z_vox) / z_vox), 10)
             start_z = int(start_z)
             end_z = int(end_z)
+            print(start_frac, end_frac)
+            print(const_z[start_z:end_z+1])
+
             slice_sum = 0
             for z in const_z[start_z:end_z+1]:
                 if const_z.index(z) == start_z:
@@ -157,10 +169,12 @@ def TCM_axial(text, stn, z_1, z_2, ct, start_cm, end_cm, beam, pitch):
                     slice_sum += (z * end_frac)
                 else:
                     slice_sum += z
+            print(slice_sum)
             avg_slice = round(slice_sum / (bounds[i+1]-bounds[i]), 10)
-            slice_avgs.append(avg_slice)
+            slice_avgs.append(slice_sum)
     
             i += 1
+        print("DENS LIST CT:", slice_avgs)
         
     # Finds average density over the whole volume/range of the scan
     # and compares each slice average density to the volume density to find
@@ -171,8 +185,7 @@ def TCM_axial(text, stn, z_1, z_2, ct, start_cm, end_cm, beam, pitch):
             rat = d / CT_avg_vol
             CT_diameters.append(rat)
     
-
-        
+    
     if ct == 'y' or ct == 'Y':
         zI0 = []
         i = 0
@@ -184,12 +197,12 @@ def TCM_axial(text, stn, z_1, z_2, ct, start_cm, end_cm, beam, pitch):
             I_0 = I_const/exp(mass_atten, rho, t)
             zI0.append(I_0)
             i += 1
-        print('\nThe diameters of each slice are shown:', CT_diameters)
+        #print('\nThe diameters of each slice are shown:', CT_diameters)
         print('\nThe average density over the entire range is:', CT_avg_vol)
-        print('\nThe initial intensities I_0 needed such that the projection intensity \
-    I stays constant are shown:', zI0)
-        print("Z length: ", len(z_sli_cyl), "\t CT length", len(CT_diameters))
-        
+        #print('\nThe initial intensities I_0 needed such that the projection intensity \
+    #I stays constant are shown:', zI0)
+        #print("Z length: ", len(z_sli_cyl), "\t CT length", len(CT_diameters))
+    '''    
     print(CT_diameters.index(0))
     xx = 0
     diff = []
@@ -211,6 +224,6 @@ def TCM_axial(text, stn, z_1, z_2, ct, start_cm, end_cm, beam, pitch):
     elif stn == "N" and ct == "Y":
         return "Initial intensities I_0 needed such that the projection intensity\
  I stays constant are shown: {}".format(zI0)
-
+'''
         
-print(TCM_axial('rpi_average_male_73.txt', 'Y', 0, 509, 'Y', 0, 190, 0, 1))
+print(TCM_axial('rpi_average_male_73.txt', 'Y', 5, 6, 'Y', 1.75, 2.45, .175, 1))
