@@ -152,13 +152,14 @@ def TCM_axial(text, stn, z_1, z_2, ct, start_cm, end_cm, beam, pitch):
         while i+1 < len(bounds):
             start_z = float(bounds[i]/z_vox)
             end_z = float(bounds[i+1]/z_vox)
-            start_frac = round(float(1 - ((bounds[i] % z_vox) / z_vox)), 10)
+            start_frac = round(float(1 - ((round(bounds[i], 10) % round(z_vox, 10)) / z_vox)), 10)
             end_frac = round(float((bounds[i+1] % z_vox) / z_vox), 10)
             start_z = int(start_z)
             end_z = int(end_z)
+            print((round(bounds[i], 2) % round(z_vox, 2)))
            # print(bounds[i+1] % z_vox)
            # print(start_z, end_z)
-           # print(start_frac, end_frac)
+            print(start_frac, end_frac)
            # print(const_z[start_z:end_z+1])
 
             slice_sum = 0
@@ -180,7 +181,6 @@ def TCM_axial(text, stn, z_1, z_2, ct, start_cm, end_cm, beam, pitch):
                     zf = z_vox / width
                     #print(zf)
                     slice_sum += (z * zf)
-            avg_slice = round(slice_sum / (bounds[i+1]-bounds[i]), 10)
             slice_avgs.append(slice_sum)
     
             i += 1
@@ -223,4 +223,4 @@ def TCM_axial(text, stn, z_1, z_2, ct, start_cm, end_cm, beam, pitch):
  I stays constant are shown: {}".format(zI0)
 
         
-print(TCM_axial('rpi_average_male_73.txt', 'Y', 1, 2, 'Y', .35, .7, .175, 1))
+print(TCM_axial('rpi_average_male_73.txt', 'Y', 45, 51, 'Y', 15.75, 17.85, .35, 1))
