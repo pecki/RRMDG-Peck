@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """
 Created on Sun Jan 28 19:55:25 2018
-
 @author: pecki
 """
 
@@ -96,7 +95,7 @@ def write(geo):
 ##  ---> density of water = 1 g/cm^3
     F = geo.strip('.geo') + '.txt'
     file = open(F, 'w+')
-    for each in const_z:
+    for each in dens_array:
         num = str(each)
         file.write(num + ' ')
     file.close()

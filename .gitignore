@@ -1,3 +1,4 @@
 *.geo
 phantom_dimensions.txt
 FileIO
+__pycache__

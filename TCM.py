@@ -14,8 +14,9 @@ Created on Wed Jun 14 14:27:52 2017
     # end_cm -> ending value for scan
     # beam -> value for beam width
     # pitch -> value for pitch of machine
+    # wr -> write list of relative intensities to a file?  Yes=True, No=False
 
-def TCM_axial(text, stn, z_1, z_2, ct, start_cm, end_cm, beam, pitch):
+def TCM_axial(text, stn, z_1, z_2, ct, start_cm, end_cm, beam, pitch, wr):
 
     import numpy as np
     import os.path
@@ -81,8 +82,16 @@ def TCM_axial(text, stn, z_1, z_2, ct, start_cm, end_cm, beam, pitch):
                     I_0 = I_const/exp(mass_atten, rho, t)
                     z_sli_I0.append(I_0)
                     i += 1
-                print("DENS LIST Z:", sub_dens)
-                print("AVERAGE DENSITY:", vol_avg)
+                if wr == True:
+                    sp = text.strip('.txt')
+                    F = sp + 'int.txt'
+                    file = open(F, 'w+')
+                    for each in z_sli_I0:
+                        num = str(each)
+                        file.write(num + ' ')
+                    file.close()
+                #print("DENS LIST Z:", sub_dens)
+                #print("AVERAGE DENSITY:", vol_avg)
     
     
     # Allows user to use a slice thickness that is not the same as the voxel z-dimension
@@ -223,4 +232,4 @@ def TCM_axial(text, stn, z_1, z_2, ct, start_cm, end_cm, beam, pitch):
  I stays constant are shown: {}".format(zI0)
 
         
-print(TCM_axial('rpi_average_male_73.txt', 'Y', 45, 51, 'Y', 15.75, 17.85, .35, 1))
+print(TCM_axial('rpi_obese_male_117.txt', 'Y', 0, 509, 'N', 0, 0, 0, 0, True))
