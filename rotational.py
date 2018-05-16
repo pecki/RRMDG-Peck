@@ -9,9 +9,11 @@ Created on Sat Mar 17 22:21:51 2018
 # type_ap -> 'a'=adult or 'p'=pediatric - determines how matrix is retrieved
 # getfile -> mtx text file name for adult, directory path for child
 # intlist -> file name of average slice intensity .txt file
+# z1 -> starting z-slice value
+# z2 -> ending z-slice value
 
 
-def TCM_rot(type_ap, getfile, intlist):
+def TCM_rot(type_ap, getfile, intlist, z1, z2):
     import numpy as np
     from numpy import pi
     import time
@@ -53,10 +55,10 @@ def TCM_rot(type_ap, getfile, intlist):
         theta = 0
         angles = {}
         while theta < 2*pi:
-            y = np.sqrt(I90**2 / (np.tan(theta)**2 + (I90 / I0)**2))
+            y = np.sqrt((I90/2)**2 / (np.tan(theta)**2 + ((I90/2) / (I0/2))**2))
             x = np.tan(theta) * y
-            r = round(np.sqrt(x**2 + y**2), 2)
-            angles[round((theta * 180/pi), 2)] = r
+            r = np.sqrt(x**2 + y**2)
+            angles[round((theta * 180/pi), 2)] = 2*round(r, 5)
             theta += pi / 8
     
         return angles
@@ -76,10 +78,25 @@ def TCM_rot(type_ap, getfile, intlist):
     slice_Is = get_int_list(intlist)
     print(len(slice_Is))
     
+    if z1 == z2:
+        return 'Error: slice range is 0'
+    elif z1 < 0 or z2 < 0:
+        return 'Error: cannot have negative slice values.'
+    elif z1 > len(slice_Is) or z2 > len(slice_Is):
+        return 'Error: slice value out of phantom range'
+    
+    if z1 > z2:
+        mm1 = z1
+        mm2 = z2
+        z2 = mm1
+        z1 = mm2
+    
+    print(z1, z2)
+    
     intensities = []
     i = 0
-    for z in mtx3D:
-        I_sl = slice_Is[i]
+    for z in mtx3D[z1:z2]:
+        I_sl = slice_Is[i+z1]
         zt = np.transpose(z)
         intensities.append(get_I(z, zt, vox_t, I_sl))
         i += 1
@@ -90,4 +107,4 @@ def TCM_rot(type_ap, getfile, intlist):
     print(len(intensities))
     return intensities
 
-print(TCM_rot('a', 'rpi_obese_female_89mtx.txt', 'rpi_obese_female_89int.txt'))
+print(TCM_rot('a', 'rpi_obese_female_89mtx.txt', 'rpi_obese_female_89int.txt', 10, 8))

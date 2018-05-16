@@ -4,7 +4,7 @@ Created on Wed Jun 14 14:27:52 2017
 
 @author: pecki
 """
-### In this function there are 9 parameters and they should be as follows:
+### In this function there are 10 parameters and they should be as follows:
     # text -> .txt file containing const_z density array
     # stn -> "Y" or "N", representing whether we want multiple z-slices
     # z_1 -> first slice index included if stn == "Y", 0 if "N"
@@ -232,4 +232,4 @@ def TCM_axial(text, stn, z_1, z_2, ct, start_cm, end_cm, beam, pitch, wr):
  I stays constant are shown: {}".format(zI0)
 
         
-print(TCM_axial('rpi_obese_male_117.txt', 'Y', 0, 509, 'N', 0, 0, 0, 0, True))
+print(TCM_axial('15fdens.txt', 'N', 0, 100, 'Y', 80.2, 118.1, 1, 1, False))
